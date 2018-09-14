@@ -1,24 +1,61 @@
 # Code Book
 
+Each variable was imported form different files.
+The files were sparated into *test* and *traning* sets a new variable called
+**type** was created to identify the origin set.
 
-) a code book that describes the variables, the data, and any transformations or work that you performed to clean up the data called CodeBook.md. You should also include a README.md in the repo with your scripts. This repo explains how all of the scripts work and how they are connected.
+The variables *X,body_acc_x,body_acc_y,body_acc_z,body_gyro_x,body_gyro_y,
+body_gyro_z,total_acc_x,total_acc_y,total_acc_z,subject,activity* each
+constitute of a series of 128 samples, the variables **session** and **timeFrame**
+were created to identify the origin serie and its index inside the series
+
+The variable **activity** was trasformed from integer to factor based on the
+file *activity_labels.txt* that is part of the original data.
 
 
+## Output Variables
 
-- 'train/X_train.txt': Training set.
+**subject**: Identifies the person that performed the recorded activity
 
-- 'train/y_train.txt': Training labels.
+**activity**: Identify the type of activity being of the sample
 
-- 'test/X_test.txt': Test set.
+**session**: Identifier of a recorded session
 
-- 'test/y_test.txt': Test labels.
+**type**: Identify the type of the data (traning or test)
 
-The following files are available for the train and test data. Their descriptions are equivalent.
+**timeFrame**: Index of the sample of a recorded session
 
-- 'train/subject_train.txt': Each row identifies the subject who performed the activity for each window sample. Its range is from 1 to 30.
+**X**: no clue
 
-- 'train/Inertial Signals/total_acc_x_train.txt': The acceleration signal from the smartphone accelerometer X axis in standard gravity units 'g'. Every row shows a 128 element vector. The same description applies for the 'total_acc_x_train.txt' and 'total_acc_z_train.txt' files for the Y and Z axis.
+**body_acc_x**: The body acceleration X axis signal obtained by subtracting the
+gravity from the total acceleration.
 
-- 'train/Inertial Signals/body_acc_x_train.txt': The body acceleration signal obtained by subtracting the gravity from the total acceleration.
+**body_acc_y**: The body acceleration X axis signal obtained by subtracting the
+gravity from the total acceleration.
 
-- 'train/Inertial Signals/body_gyro_x_train.txt': The angular velocity vector measured by the gyroscope for each window sample. The units are radians/second.
+**body_acc_z**: The body acceleration X axis signal obtained by subtracting the
+gravity from the total acceleration.
+
+**body_gyro_x**: The angular velocity vector measured by the gyroscope X axis
+for each window sample. The units are radians/second.
+
+**body_gyro_y**: The angular velocity vector measured by the gyroscope Y axis
+for each window sample. The units are radians/second.
+
+**body_gyro_z**: The angular velocity vector measured by the gyroscope X axis
+for each window sample. The units are radians/second.
+
+**total_acc_x**: The acceleration signal from the smartphone accelerometer X axis
+in standard gravity units 'g'
+
+**total_acc_y**: The acceleration signal from the smartphone accelerometer Y axis
+in standard gravity units 'g'
+
+**total_acc_z**: The acceleration signal from the smartphone accelerometer Z axis
+in standard gravity units 'g'
+
+X_train.txt': Training set.
+
+y_train.txt': Training labels.
+
+test/X_test.txt': Test set.

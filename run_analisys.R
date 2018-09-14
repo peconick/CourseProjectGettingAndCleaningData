@@ -1,24 +1,24 @@
 run_analisys<-function(){
-    library(dplyr)
-    library(reshape)
+    require(dplyr)
+    require(reshape)
     
     tidyData<-loadData()
-    filteredData<-filterSTD(tidyData)
-    namedActivities<-nameActivities(filteredData)
-    groupedAverage<-averageGroups(namedActivities)
+    namedActivities<-nameActivities(tidyData)
+    filteredData<-filterSTD(namedActivities)
+    groupedAverage<-averageGroups(filteredData)
+    namedActivities
 }
 loadData<-function(){    
     ## This function loads the data of multiple files and organize it on a single data frame
-    
-    ### ??????   features<-read.csv("UCI HAR Dataset//features.txt", sep= " ", header = FALSE)[2]
     
     #List the names of files on inertial Singnals folder
     inertialSignalsfileList<-dir(paste(getwd(),"/UCI HAR Dataset/train/Inertial Signals",sep=""))
     inertialSignalsVariablenames<-sub("_train.txt", "", inertialSignalsfileList)
     
-    
+    ## Initialize dataframe
     tidyData<-data.frame()
     
+    ## Loop thru test anda train datasetes
     for (type in c("test","train")){
         print(paste("loading:",type))
 
@@ -34,12 +34,14 @@ loadData<-function(){
         )
         
         ## Add grouping variables
-        df<-cbind(df,timeSeries=1:nrow(df)) ## timeSeries
         df<-cbind(df,type=rep(type,nrow(df))) ## type (train, test)
+        df<-cbind(df,session=1:nrow(df)) ## Session
 
-        ## Rename columns and melt data
+        ## Rename columns
         names(df)[1:2]<-c("subject","activity")
-        df<-melt(df,id=c("subject","activity","timeSeries","type"))
+        
+        ## Transofrm coluns (128 observations of a session) into lines
+        df<-melt(df,id=c("subject","activity","session","type"))
         names(df)[5:6]<-c("timeFrame","X")
         
         
@@ -48,6 +50,7 @@ loadData<-function(){
             print(paste("loading variable:",variable))
             fileName<-paste(getwd(),"/UCI HAR Dataset/",type,"/Inertial Signals/",variable,"_",type,".txt",sep="")
             var<-read.fwf(fileName, widths=rep(16,128))
+            ## column to lines -same logic as above
             var<-melt(var)
             names(var)[2]<-variable
             ## Attach new data as column
@@ -62,49 +65,57 @@ loadData<-function(){
     
     ## Adjust time frame index variable to integer
     tidyData$timeFrame<-as.integer(sub("X.V","",tidyData$timeFrame, fixed = TRUE))
-    #levels(tidyData$activity)<-activity_labels
+    
     tidyData
 }
 
-filterSTD<-function(Data){
-    ## Calculate Mean and Dtandard Deviation for each variable
-    means<-colMeans(data[,6:15])
-    sd<-sapply(data[,6:15],sd)
-    ## Calculate upper and lower limits for each variable
-    min<-means-sd
-    max<-means+sd
-    ## Filter data based on limits
-    data[data[,6]>=min[1] & data[,6]<=max[1] &
-        data[,7]>=min[2] & data[,7]<=max[2] &     
-        data[,8]>=min[3] & data[,8]<=max[3] &     
-        data[,9]>=min[4] & data[,9]<=max[4] &     
-        data[,10]>=min[5] & data[,10]<=max[5] &     
-        data[,11]>=min[6] & data[,11]<=max[6] &     
-        data[,12]>=min[7] & data[,12]<=max[7] &     
-        data[,13]>=min[8] & data[,13]<=max[8] &     
-        data[,14]>=min[9] & data[,14]<=max[9] &     
-        data[,15]>=min[10] & data[,15]<=max[10]     
-        ,]
-    
-    
-}
-
 nameActivities<-function(Data){
+    ## This function sets the names of the activities based on description file
+    
     ## Load factor names
     activity_labels<-read.csv("UCI HAR Dataset//activity_labels.txt",sep = " ", header = FALSE)[2]
     
     ## Set activity to factor
     Data$activity<-as.factor(Data$activity)
     
-    ## Set activities names on the data
+    ## Set activities names on the data to names on the file read above
     levels(Data$activity)<-activity_labels[1:6,]
     
     Data
 }
 
+filterSTD<-function(Data){
+    ## filter data on meand and Standard Deviation
+    
+    ## Calculate Mean and Dtandard Deviation for each variable
+    means<-colMeans(Data[,6:15])
+    sd<-sapply(Data[,6:15],sd)
+    ## Calculate upper and lower limits for each variable
+    min<-means-sd
+    max<-means+sd
+    
+    ## Filter data based on limits
+    Data[Data[,6]>=min[1] & Data[,6]<=max[1] &
+        Data[,7]>=min[2] & Data[,7]<=max[2] &     
+        Data[,8]>=min[3] & Data[,8]<=max[3] &     
+        Data[,9]>=min[4] & Data[,9]<=max[4] &     
+        Data[,10]>=min[5] & Data[,10]<=max[5] &     
+        Data[,11]>=min[6] & Data[,11]<=max[6] &     
+        Data[,12]>=min[7] & Data[,12]<=max[7] &     
+        Data[,13]>=min[8] & Data[,13]<=max[8] &     
+        Data[,14]>=min[9] & Data[,14]<=max[9] &     
+        Data[,15]>=min[10] & Data[,15]<=max[10]     
+        ,]
+    
+    
+}
+
 averageGroups<-function(data){
-    data %>%
-    group_by(subject,activity)%>%
+    ## Calculates the average of each variables for each subject and activity pair
+    summary<-data %>%
+    ## group baesd on subject and activity
+    group_by(subject,activity)%>% 
+    ## calculate the average of each variable for each group
     summarize(  X=mean(X),
                 body_acc_x=mean(body_acc_x),  
                 body_acc_y=mean(body_acc_y),  
@@ -116,7 +127,10 @@ averageGroups<-function(data){
                 total_acc_y=mean(total_acc_y),
                 total_acc_z=mean(total_acc_x)
     )
+    ## Export averages to file
+    write.table(summary,"summary.txt",row.names = FALSE)
     
+    summary
 }
 
 downloadData<-function(){
@@ -127,3 +141,4 @@ downloadData<-function(){
     zipF<- "dataset.zip"
     unzip(zipF,exdir=getwd())
 }
+#by Gustavo Peconick
